@@ -6,10 +6,8 @@
 }
 
 body {
-/*	background-color: #222222;*/
 	background-color: #222222;
 	font-family: 'Lato';
-	font-weight: normal;
 	color: #D0D0D0;
 }
 
@@ -22,7 +20,8 @@ body {
     padding: 30px 0px;
 }
 
-#title h1 {
+#title p {
+	font-size: 30px;
 	background: -webkit-linear-gradient(#E8DE60, #A4E482, #4A8AA1);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -53,17 +52,17 @@ body {
 	left: 50%;
 	top: 75px;
 	transform: translateX(-50%);
-	color: #AFAFAF;
+	color: #D0D0D0;
 	font-size: 16px;
 	cursor: pointer;
 	border-bottom: 1px solid #D3D3D3;
-	z-index: 9999999;
 }
 
 #btn:hover {
-	background-color: #FFFFFF;
-	color: #222222;
-	opacity: 0.3;
+/*	background-color: #FFFFFF;*/
+/*	color: #222222;*/
+/*	opacity: 0.3;*/
+	border-bottom: 3px solid #D3D3D3;
 }
 
 #map-box {
@@ -79,9 +78,9 @@ body {
 
 .state-abb {
 	font-family: 'Roboto';
+	font-size: 17px;
 	fill: #FFFFFF;
 	text-anchor: middle;
-	font-size: 17px;
 }
 
 
@@ -96,6 +95,11 @@ body {
     opacity: 0.8;
     width: 150px;
     font-family: 'Roboto';
+    border-left: 3.5px solid #FD8A9E;
+}
+
+#tooltip-state {
+	color: #555555;
 }
 
 

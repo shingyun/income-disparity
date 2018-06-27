@@ -1,7 +1,22 @@
+window_h = $(window).height();
+window_w = $(window).width();
+map_top = $('#map').offset().top;
+svg_w = 1000;
+svg_h = 650;
+circle_stroke = 1;
+circle_stroke_mouse = 3;
+color_low = '#4A8AA1';
+color_mid = '#A4E482';
+color_high ='#E8DE60';
+color_bg = '#222222';
+r_min = 3;
+r_max = 40;
+clicks = 0;
+
 var plot = d3.select('#map')
     .append('svg')
-    .attr('width','1000px')
-    .attr('height','700px')
+    .attr('width', svg_w + 'px')
+    .attr('height', svg_h + 'px')
       .append('g')
       .attr('transform','translate(50,50)')
 
@@ -13,11 +28,11 @@ var legend = d3.select('#intro-legend')
        .attr('tranform','translate(0,0)')
 
 var scaleR = d3.scaleLinear()
-    .range([2.5,45]);
+    .range([r_min,r_max]);
 
 var scaleColor = d3.scaleLinear()
     // .range(['#77B3D9','#A58CBB','#B46A87'])
-    .range(['#4A8AA1','#A4E482','#E8DE60'])
+    .range([color_low, color_mid, color_high])
 
 var format = d3.format('$,');
 
@@ -120,9 +135,9 @@ function dataloaded(err, data) {
         	return 'translate(0,'+ (50-scaleR(Math.sqrt(d.INCOME))) +')';
         })
         .attr('r', d => scaleR(Math.sqrt(d.INCOME)))
-        .style('stroke-width', '0.75px')
+        .style('stroke-width', circle_stroke + 'px')
         .style('stroke', d => scaleColor(d.INCOME))
-        .style('fill', '#222222')
+        .style('fill', color_bg)
         .on('mouseover', d => {
 	        //Tooltip //
             var tooltip = d3.select('#tooltip')
@@ -130,7 +145,7 @@ function dataloaded(err, data) {
 
             var x = d3.event.pageX, y = d3.event.pageY
 
-            if(x > 640){
+            if(x > window_w/2){
             	tooltip
             	.style('left',(d3.event.pageX-190) + 'px')
             } else {
@@ -138,7 +153,7 @@ function dataloaded(err, data) {
             	.style('left',(d3.event.pageX+20) + 'px')
             }
 
-            if(y > 700){
+            if(y > (map_top + (svg_h/1.75))){
             	tooltip
                 .style('top',(d3.event.pageY-100) + 'px')
             } else {
@@ -157,14 +172,14 @@ function dataloaded(err, data) {
 	        var spe = d.COUNTY_ID+d.STATE_ABB
 	        d3.select('#county'+spe)
 	          .style('stroke', '#FFFFFF')
-	          .style('stroke-width','2px');
+	          .style('stroke-width',circle_stroke_mouse + 'px');
 	    })
 	    .on('mouseleave', d => {
 	    	//circle style//
 	        var spe = d.COUNTY_ID+d.STATE_ABB
 	        d3.select('#county'+spe)
 	          .style('stroke', scaleColor(d.INCOME))
-	          .style('stroke-width','0.75px');
+	          .style('stroke-width',circle_stroke + 'px');
 	    })
     
     states.on('mouseleave', function(){
@@ -179,22 +194,31 @@ function dataloaded(err, data) {
           .style('visibility','hidden')
           .style('opacity', 0)
 
-    d3.select('#btn')
-      .on('mouseenter', function(){
-	    	d3.selectAll('.state-abb')
-	    	  .style('visibility','visible')
-	    	  .transition(1000)
-	    	  .style('opacity',1)
-	    	  .attr('transform','translate(0,10)');
 
-	    	d3.select('#tooltip')
-	    	  .style('visibility','hidden');
-      })
-      .on('mouseleave', function(){
-    	    d3.selectAll('.state-abb')
-    	      .style('opacity',0)
-	    	  .style('visibility','hidden'); 
-      })
+    $('#btn').click(function(){
+          if (clicks%2 == 0){
+
+                d3.selectAll('.state-abb')
+                  .style('visibility','visible')
+                  .transition(1000)
+                  .style('opacity',1)
+                  .attr('transform','translate(0,10)');
+
+                d3.select('#btn')
+                  .html('Hide States');
+
+          } else {
+                d3.selectAll('.state-abb')
+                  .classed('showing',false)
+                  .style('opacity',0)
+                  .style('visibility','hidden')
+                  .attr('transform','translate(0,30)');   
+
+                d3.select('#btn')
+                  .html('Show States');
+          }
+          ++clicks;
+    })
 
 }
 
