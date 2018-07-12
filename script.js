@@ -9,6 +9,7 @@ color_low = '#4A8AA1';
 color_mid = '#A4E482';
 color_high ='#E8DE60';
 color_bg = '#222222';
+color_mean = '#236269'
 r_min = 3;
 r_max = 40;
 clicks = 0;
@@ -49,9 +50,16 @@ d3.queue()
 
 function dataloaded(err, data) {
 
-    data.forEach(d => income_arr.push(d.INCOME))
+    var income_total = 0
+    data.forEach(d => {
+        income_total = income_total + d.INCOME
+        income_arr.push(d.INCOME)
+    })
     min = d3.min(income_arr)
     max = d3.max(income_arr)
+    mean = Math.round(income_total/data.length)
+
+    console.log(mean)
 
     scaleR.domain([Math.sqrt(min),Math.sqrt(max)])
     scaleColor.domain([min,(min+max)/2,max])
@@ -180,6 +188,31 @@ function dataloaded(err, data) {
           .style('opacity', 0)
 
 
+    // Mean circle
+    var states = plot.selectAll('.state-mean')
+        .data(nestedDataByGap)
+        .enter()
+        .append('g')
+        .attr('class','state-mean')
+        .attr('transform', function(d){
+
+            var x = d.values[0].X_POSITION*75+40, 
+                y = d.values[0].Y_POSITION*70;
+            
+            return 'translate('+ x + ',' + y + ')';
+        })
+        .append('circle')
+        .classed('mean', true)
+        .attr('transform', d => {
+            return 'translate(0,'+ (50-scaleR(Math.sqrt(mean))) +')';
+        })
+        .attr('r',d => scaleR(Math.sqrt(mean)))
+        .style('stroke-width', (circle_stroke+1) + 'px')
+        .style('stroke', color_mean)
+        .style('fill','none')
+
+
+
     //// LEGEND ////
     legendData = 
     [
@@ -191,10 +224,16 @@ function dataloaded(err, data) {
           name: 'small',
           value: min + 10000,
           text: 'Lower-income County'
-        },{
-          name: 'middle',
-          value: ((min + 10000) + max)/2,
-          text: ''
+        },
+        // {
+        //   name: 'middle',
+        //   value: ((min + 10000) + max)/2,
+        //   text: ''
+        // },
+        {
+          name: 'mean',
+          value: mean,
+          text: 'Average income'
         }
     ]
 
@@ -207,7 +246,13 @@ function dataloaded(err, data) {
             return 'translate(150,'+ (120-scaleR(Math.sqrt(d.value))) + ')';
         })
         .attr('r', d => scaleR(Math.sqrt(d.value)))
-        .style('stroke', d => scaleColor(d.value))
+        .style('stroke', d => {
+            if(d.name == 'mean'){
+                return color_mean
+            } else {
+                return scaleColor(d.value)
+            }
+        })
         .style('stroke-width','1.5px')
         .style('fill','none')
 
@@ -219,13 +264,21 @@ function dataloaded(err, data) {
         .attr('transform', d => {
             if(d.name == 'big'){
                 return 'translate(150,20)'
-            } else {
+            } else if (d.name == 'small') {
                 return 'translate(150,140)'
+            } else {
+                return 'translate(150,80)'
             }
         })
         .text(d => d.text)
         .style('text-anchor','middle')
-        .style('fill', d => scaleColor(d.value))
+        .style('fill', d => {
+            if(d.name == 'mean'){
+                return color_mean
+            } else {
+                return scaleColor(d.value)
+            }
+        })
 
 
     //Show States btn
@@ -268,9 +321,20 @@ function dataloaded(err, data) {
                     y = d.values[0].Y_POSITION*70;
                             
                 return 'translate('+ x + ',' + y + ')';
-            })
+        })
 
-        });
+        plot.selectAll('.state-mean')
+            .transition().duration(1000)
+            .attr('transform', function(d){
+
+                var x = d.values[0].X_POSITION*75+40, 
+                    y = d.values[0].Y_POSITION*70;
+                
+                return 'translate('+ x + ',' + y + ')';
+        })
+
+
+    });
 
     $('#btn-gap').click(function(){
         $('.view-selected').removeClass('view-selected')
@@ -284,7 +348,18 @@ function dataloaded(err, data) {
                     y = Math.floor(i/8)*80+20;
                             
                 return 'translate('+ x + ',' + y + ')';
-            })
+        })
+
+
+        plot.selectAll('.state-mean')
+            .transition().duration(1000)
+            .attr('transform', function(d,i){
+
+                var x = i%8*90+150, 
+                    y = Math.floor(i/8)*80+20;
+                            
+                return 'translate('+ x + ',' + y + ')';
+        })
 
     });
 
