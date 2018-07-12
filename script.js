@@ -13,6 +13,11 @@ r_min = 3;
 r_max = 40;
 clicks = 0;
 
+
+//View setting defult
+$('#btn-map').addClass('view-selected');
+
+//Drawing
 var plot = d3.select('#map')
     .append('svg')
     .attr('width', svg_w + 'px')
@@ -50,14 +55,23 @@ function dataloaded(err, data) {
     min = d3.min(income_arr)
     max = d3.max(income_arr)
 
-
     scaleR.domain([Math.sqrt(min),Math.sqrt(max)])
     scaleColor.domain([min,(min+max)/2,max])
-
     
     data.sort(function(a,b){return b.INCOME-a.INCOME})
     nestedData = d3.nest().key(d => d.STATE)
+        .sortKeys(d3.ascending)
         .entries(data);
+
+    gap_arr = [];
+    d3.map(nestedData,function(d,i){
+
+        d.values.map(function(d){
+            console.log(d);
+              range = d3.extent(d.INCOME);
+        })
+        // console.log(range)
+    })
 
 
     //// LEGEND ////
@@ -117,7 +131,7 @@ function dataloaded(err, data) {
         .attr('transform', function(d){
 
         	var x = d.values[0].X_POSITION*75+40, 
-        	    y = d.values[0].Y_POSITION*75;
+        	    y = d.values[0].Y_POSITION*70;
         	
         	return 'translate('+ x + ',' + y + ')';
         })
@@ -195,6 +209,7 @@ function dataloaded(err, data) {
           .style('opacity', 0)
 
 
+    //Show States btn
     $('#btn').click(function(){
           if (clicks%2 == 0){
 
@@ -220,7 +235,55 @@ function dataloaded(err, data) {
           ++clicks;
     })
 
+
+    // Views setting
+    $('#btn-map').click(function(){
+        $('.view-selected').removeClass('view-selected')
+        $('#btn-map').addClass('view-selected')
+        
+        plot.selectAll('.state')
+            .transition().duration(1000)
+            .attr('transform', function(d){
+
+                var x = d.values[0].X_POSITION*75+40, 
+                    y = d.values[0].Y_POSITION*70;
+                            
+                return 'translate('+ x + ',' + y + ')';
+            })
+
+        });
+
+    $('#btn-gap').click(function(){
+        $('.view-selected').removeClass('view-selected')
+        $('#btn-gap').addClass('view-selected')
+
+        plot.selectAll('.state')
+            .transition().duration(1000)
+            .attr('transform', function(d,i){
+
+                var x = i%8*90+150, 
+                    y = Math.floor(i/8)*80+20;
+                            
+                return 'translate('+ x + ',' + y + ')';
+            })
+
+    });
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 function parse(d){
