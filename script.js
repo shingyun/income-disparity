@@ -49,8 +49,6 @@ d3.queue()
 
 function dataloaded(err, data) {
 
-	console.log(data)
-
     data.forEach(d => income_arr.push(d.INCOME))
     min = d3.min(income_arr)
     max = d3.max(income_arr)
@@ -58,73 +56,46 @@ function dataloaded(err, data) {
     scaleR.domain([Math.sqrt(min),Math.sqrt(max)])
     scaleColor.domain([min,(min+max)/2,max])
     
+    //sort data and arrange them from highest income to lowest
     data.sort(function(a,b){return b.INCOME-a.INCOME})
     nestedData = d3.nest().key(d => d.STATE)
         .sortKeys(d3.ascending)
         .entries(data);
 
+    //Calculate the gap
     gap_arr = [];
-    d3.map(nestedData,function(d,i){
 
-        d.values.map(function(d){
-            console.log(d);
-              range = d3.extent(d.INCOME);
+    nestedData.forEach(function(d){
+        var income_arr = [];
+        d.values.forEach(function(e){
+            income_arr.push(e.INCOME)     
         })
-        // console.log(range)
+        gap_arr.push({
+            state: d.key,
+            gap: d3.extent(income_arr)[1] - d3.extent(income_arr)[0]
+        })
     })
 
+    gap_arr.sort(function (a,b) {
+        return b.gap - a.gap
+    })
 
-    //// LEGEND ////
-    legendData = 
-    [
-	    { 
-	      name: 'big',
-	      value: max,
-	      text: 'Higher-income County'
-	    },{
-	      name: 'small',
-	      value: min + 10000,
-	      text: 'Lower-income County'
-	    },{
-	      name: 'middle',
-	      value: ((min + 10000) + max)/2,
-	      text: ''
-	    }
-	]
+    // State in the oder of gap
+    state_by_gap = [];
+    gap_arr.forEach(function(d){
+        state_by_gap.push(d.state);
+    })
 
-    legend.selectAll('.legend-circle')
-        .data(legendData)
-        .enter()
-        .append('circle')
-        .attr('class','legend-circle')
-        .attr('transform',d => {
-        	return 'translate(150,'+ (120-scaleR(Math.sqrt(d.value))) + ')';
-        })
-        .attr('r', d => scaleR(Math.sqrt(d.value)))
-        .style('stroke', d => scaleColor(d.value))
-        .style('stroke-width','1.5px')
-        .style('fill','none')
-
-    legend.selectAll('.legend-text')
-        .data(legendData)
-        .enter()
-        .append('text')
-        .attr('class','legend-text')
-        .attr('transform', d => {
-        	if(d.name == 'big'){
-        		return 'translate(150,20)'
-        	} else {
-        		return 'translate(150,140)'
-        	}
-        })
-        .text(d => d.text)
-        .style('text-anchor','middle')
-        .style('fill', d => scaleColor(d.value))
+    //nest data and sort by the gap order
+    nestedDataByGap = d3.nest()
+        .key(d => d.STATE)
+        .sortKeys((a,b) => state_by_gap.indexOf(a)-state_by_gap.indexOf(b))
+        .entries(data);    
 
 
     //// MAP ////
     var states = plot.selectAll('.state')
-        .data(nestedData)
+        .data(nestedDataByGap)
         .enter()
         .append('g')
         .attr('class','state')
@@ -207,6 +178,54 @@ function dataloaded(err, data) {
           .attr('transform','translate(0,30)')
           .style('visibility','hidden')
           .style('opacity', 0)
+
+
+    //// LEGEND ////
+    legendData = 
+    [
+        { 
+          name: 'big',
+          value: max,
+          text: 'Higher-income County'
+        },{
+          name: 'small',
+          value: min + 10000,
+          text: 'Lower-income County'
+        },{
+          name: 'middle',
+          value: ((min + 10000) + max)/2,
+          text: ''
+        }
+    ]
+
+    legend.selectAll('.legend-circle')
+        .data(legendData)
+        .enter()
+        .append('circle')
+        .attr('class','legend-circle')
+        .attr('transform',d => {
+            return 'translate(150,'+ (120-scaleR(Math.sqrt(d.value))) + ')';
+        })
+        .attr('r', d => scaleR(Math.sqrt(d.value)))
+        .style('stroke', d => scaleColor(d.value))
+        .style('stroke-width','1.5px')
+        .style('fill','none')
+
+    legend.selectAll('.legend-text')
+        .data(legendData)
+        .enter()
+        .append('text')
+        .attr('class','legend-text')
+        .attr('transform', d => {
+            if(d.name == 'big'){
+                return 'translate(150,20)'
+            } else {
+                return 'translate(150,140)'
+            }
+        })
+        .text(d => d.text)
+        .style('text-anchor','middle')
+        .style('fill', d => scaleColor(d.value))
 
 
     //Show States btn
