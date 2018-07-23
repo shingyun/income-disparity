@@ -1,3 +1,4 @@
+//Basic settings
 window_h = $(window).height();
 window_w = $(window).width();
 map_top = $('#map').offset().top;
@@ -9,7 +10,9 @@ color_low = '#4A8AA1';
 color_mid = '#A4E482';
 color_high ='#E8DE60';
 color_bg = '#222222';
-color_mean = '#236269'
+color_mean = '#FFFFFF';
+dash = '3 1.5';
+delay = 50;
 r_min = 3;
 r_max = 40;
 clicks = 0;
@@ -58,8 +61,6 @@ function dataloaded(err, data) {
     min = d3.min(income_arr)
     max = d3.max(income_arr)
     mean = Math.round(income_total/data.length)
-
-    console.log(mean)
 
     scaleR.domain([Math.sqrt(min),Math.sqrt(max)])
     scaleColor.domain([min,(min+max)/2,max])
@@ -188,7 +189,7 @@ function dataloaded(err, data) {
           .style('opacity', 0)
 
 
-    // Mean circle
+////// Mean circle //////
     var states = plot.selectAll('.state-mean')
         .data(nestedDataByGap)
         .enter()
@@ -210,10 +211,11 @@ function dataloaded(err, data) {
         .style('stroke-width', (circle_stroke+1) + 'px')
         .style('stroke', color_mean)
         .style('fill','none')
+        .style('stroke-dasharray',dash)
 
 
 
-    //// LEGEND ////
+////// LEGEND //////
     legendData = 
     [
         { 
@@ -255,6 +257,13 @@ function dataloaded(err, data) {
         })
         .style('stroke-width','1.5px')
         .style('fill','none')
+        .style('stroke-dasharray', d =>{
+            if(d.name == 'mean'){
+                return dash
+            } else {
+                return
+            }
+        })
 
     legend.selectAll('.legend-text')
         .data(legendData)
@@ -287,7 +296,7 @@ function dataloaded(err, data) {
 
                 d3.selectAll('.state-abb')
                   .style('visibility','visible')
-                  .transition(1000)
+                  .transition().duration(500)
                   .style('opacity',1)
                   .attr('transform','translate(0,10)');
 
@@ -314,7 +323,9 @@ function dataloaded(err, data) {
         $('#btn-map').addClass('view-selected')
         
         plot.selectAll('.state')
-            .transition().duration(1000)
+            .transition()
+            .delay((d,i) => i%10 * delay)
+            .duration(1000)
             .attr('transform', function(d){
 
                 var x = d.values[0].X_POSITION*75+40, 
@@ -324,7 +335,9 @@ function dataloaded(err, data) {
         })
 
         plot.selectAll('.state-mean')
-            .transition().duration(1000)
+            .transition()
+            .delay((d,i) => i%10 * delay)
+            .duration(1000)
             .attr('transform', function(d){
 
                 var x = d.values[0].X_POSITION*75+40, 
@@ -341,7 +354,9 @@ function dataloaded(err, data) {
         $('#btn-gap').addClass('view-selected')
 
         plot.selectAll('.state')
-            .transition().duration(1000)
+            .transition()
+            .delay((d,i) => i%10 * delay)
+            .duration(1000)
             .attr('transform', function(d,i){
 
                 var x = i%8*90+150, 
@@ -352,7 +367,9 @@ function dataloaded(err, data) {
 
 
         plot.selectAll('.state-mean')
-            .transition().duration(1000)
+            .transition()
+            .delay((d,i) => i%10 * delay)
+            .duration(1000)
             .attr('transform', function(d,i){
 
                 var x = i%8*90+150, 
