@@ -32,20 +32,25 @@ body {
 	font-size: 0px;
 	height: initial;
 	vertical-align: top;
+	text-align: left;
+	line-height: 1.4;
 }
 
 #intro-text {
-    width: 69%;
+    width: 59%;
     min-width: 400px;
     font-size: initial;
 }
 
 #intro-legend {
-	width: 29%;
+	width: 20%;
 	min-width: 150px;
 	font-size: initial;
 }
 
+.source {
+	color: #666666;
+}
 
 /*Control Views*/
 
