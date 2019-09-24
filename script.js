@@ -26,6 +26,8 @@ var plot = d3.select('#map')
     .append('svg')
     .attr('width', svg_w + 'px')
     .attr('height', svg_h + 'px')
+    // responsive setting
+    //.call(responsive)
       .append('g')
       .attr('transform','translate(50,50)')
 
@@ -116,6 +118,7 @@ function dataloaded(err, data) {
         	return 'translate('+ x + ',' + y + ')';
         })
 
+
     var counties = states.selectAll('.county')
         .data(d => d.values)
         .enter()
@@ -132,6 +135,46 @@ function dataloaded(err, data) {
         .style('stroke-width', circle_stroke + 'px')
         .style('stroke', d => scaleColor(d.INCOME))
         .style('fill', color_bg)
+        // Click effect //
+        .on('click', d => {
+
+            //Tooltip //
+            var tooltip = d3.select('#tooltip')
+                .style('visibility','visible');
+
+            var x = d3.event.pageX, y = d3.event.pageY
+
+            if(x > window_w/2){
+                tooltip
+                .style('left',(d3.event.pageX-190) + 'px')
+            } else {
+                tooltip
+                .style('left',(d3.event.pageX+20) + 'px')
+            }
+
+            if(y > (map_top + (svg_h/1.75))){
+                tooltip
+                .style('top',(d3.event.pageY-100) + 'px')
+            } else {
+                tooltip
+                .style('top',(d3.event.pageY+40) + 'px')                
+            }
+
+            d3.select('#tooltip-state')
+              .html(d.STATE);
+            d3.select('#tooltip-county')
+              .html(d.COUNTY);
+            d3.select('#tooltip-income')
+              .html(format(d.INCOME)); 
+            
+            //circle style//
+            var spe = d.COUNTY_ID+d.STATE_ABB
+            d3.select('#county'+spe)
+              .style('stroke', '#FFFFFF')
+              .style('stroke-width',circle_stroke_mouse + 'px');
+
+        })
+        // Hover effect //
         .on('mouseover', d => {
 	        //Tooltip //
             var tooltip = d3.select('#tooltip')
@@ -176,10 +219,10 @@ function dataloaded(err, data) {
 	          .style('stroke-width',circle_stroke + 'px');
 	    })
     
-    states.on('mouseleave', function(){
+    /*states.on('mouseleave', function(){
     	d3.select('#tooltip')
     	  .style('visibility', 'hidden');
-    })
+    })*/
 
     states.append('text')
           .attr('class', 'state-abb')
@@ -187,6 +230,13 @@ function dataloaded(err, data) {
           .attr('transform','translate(0,30)')
           .style('visibility','hidden')
           .style('opacity', 0)
+
+    //Click on somewhere else and close the tooltip
+    $(document).mouseup(e => {
+        d3.select('#tooltip')
+          .style('visibility', 'hidden');
+    })
+        
 
 
 ////// Mean circle //////
@@ -227,15 +277,10 @@ function dataloaded(err, data) {
           value: min + 10000,
           text: 'Lower-income County'
         },
-        // {
-        //   name: 'middle',
-        //   value: ((min + 10000) + max)/2,
-        //   text: ''
-        // },
         {
           name: 'mean',
           value: mean,
-          text: 'Average income'
+          text: 'National average'
         }
     ]
 
@@ -317,7 +362,7 @@ function dataloaded(err, data) {
     })
 
 
-    // Views setting
+    // View settings
     $('#btn-map').click(function(){
         $('.view-selected').removeClass('view-selected')
         $('#btn-map').addClass('view-selected')
@@ -381,19 +426,29 @@ function dataloaded(err, data) {
     });
 
 
-
 }
 
 
+// function responsive(svgMap){
 
+//   var map_container = d3.select(svgMap.node().parentNode),
+//       width = parseInt(svgMap.style('width'), 10),
+//       height = parseInt(svgMap.style('height'), 10),
+//       aspect = width / height;
 
+//   svgMap.attr('viewbox', `0 0 ${width} ${height}`)
+//         .attr('preserveAspectRatio', 'xMinYMid meet')
+//         .call(resize);
 
+//   d3.select(window).on('resize.' + map_container.attr('id'), resize); 
+   
+//         function resize() { 
+//             var targetWidth = parseInt(map_container.style('width')); 
+//             svgMap.attr('width', targetWidth); 
+//             svgMap.attr('height', Math.round(targetWidth / aspect)); 
+//         }  
 
-
-
-
-
-
+// }
 
 
 
